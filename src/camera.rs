@@ -1,5 +1,8 @@
 use math::{clamp, clamp_rotation, project};
-use na::{angle, base::Matrix, norm, Orthographic3, Perspective3, Rotation3, Unit};
+use na::{
+    angle, base::Matrix, geometry::IsometryMatrix3, norm, Orthographic3, Perspective3, Rotation3,
+    Unit,
+};
 use std::f32::consts::{FRAC_1_PI, PI};
 use {Mat4, Pnt3, Vec3};
 
@@ -21,6 +24,13 @@ impl Projection {
         match &self {
             Projection::Perspective(persp) => *persp.as_matrix(),
             Projection::Orthographic(ortho) => *ortho.as_matrix(),
+        }
+    }
+
+    pub fn inverse_as_matrix(&self) -> Mat4 {
+        match &self {
+            Projection::Perspective(persp) => persp.inverse(),
+            Projection::Orthographic(ortho) => ortho.inverse(),
         }
     }
 
@@ -46,7 +56,12 @@ impl Projection {
                 let fov = clamp(width / zfar, -1.0, 1.0).atan();
                 let aspect = (ortho.right() - ortho.left()) / (ortho.top() - ortho.bottom());
 
-                Projection::Perspective(Perspective3::new(aspect, 4.0 * fov, ortho.znear(), ortho.zfar()))
+                Projection::Perspective(Perspective3::new(
+                    aspect,
+                    4.0 * fov,
+                    ortho.znear(),
+                    ortho.zfar(),
+                ))
             }
             Projection::Perspective(persp) => Projection::persp(*persp),
         }
@@ -201,8 +216,20 @@ impl PCamera {
         self.look_at = self.position + new_relative;
     }
 
+    pub fn projection_matrix(&self) -> Mat4 {
+        self.projection.as_matrix()
+    }
+
+    pub fn look_at_matrix(&self) -> Mat4 {
+        Mat4::look_at_rh(&self.position, &self.look_at, &self.up)
+    }
+
     pub fn view_matrix(&self) -> Mat4 {
-        let look_at_mat = Mat4::look_at_rh(&self.position, &self.look_at, &self.up);
-        self.projection.as_matrix() * look_at_mat
+        self.projection_matrix() * self.look_at_matrix()
+    }
+
+    pub fn inv_view_matrix(&self) -> Mat4 {
+        let look_at_mat = IsometryMatrix3::look_at_rh(&self.position, &self.look_at, &self.up);
+        look_at_mat.inverse().to_homogeneous() * self.projection.inverse_as_matrix()
     }
 }

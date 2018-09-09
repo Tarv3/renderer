@@ -5,6 +5,8 @@ extern crate glium;
 pub mod math;
 pub mod test;
 pub mod camera;
+pub mod gbuffer;
+pub mod render_object;
 
 pub type Vec3 = na::Vector3<f32>;
 pub type Vec2 = na::Vector2<f32>;
