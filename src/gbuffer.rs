@@ -1,14 +1,13 @@
 use camera::PCamera;
-use glium::backend::glutin::Display;
-use glium::framebuffer::{MultiOutputFrameBuffer, SimpleFrameBuffer};
-use glium::texture::{
-    DepthFormat::F32, DepthTexture2d, MipmapsOption::NoMipmap, Texture2d,
-    UncompressedFloatFormat::F32F32F32F32,
-};
 use glium::{
-    draw_parameters::DrawParameters,
-    index::{IndicesSource, NoIndices, PrimitiveType::TrianglesList}, uniforms::Uniforms,
-    vertex::Vertex, Program, Surface, VertexBuffer,
+    backend::glutin::Display, draw_parameters::DrawParameters,
+    framebuffer::{MultiOutputFrameBuffer, SimpleFrameBuffer},
+    index::{IndicesSource, NoIndices, PrimitiveType::TrianglesList},
+    texture::{
+        DepthFormat::F32, DepthTexture2d, MipmapsOption::NoMipmap, Texture2d,
+        UncompressedFloatFormat::F32F32F32F32,
+    },
+    uniforms::Uniforms, vertex::Vertex, Program, Surface, VertexBuffer,
 };
 use render_object::{LightModel, ModelMatrix, PosMatrix, RenderObject};
 use std::error::Error;
