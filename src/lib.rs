@@ -23,3 +23,10 @@ pub struct Vertex {
 }
 
 implement_vertex!(Vertex, position, normal, tangent, bitangent, tex_coord);
+
+#[derive(Copy, Clone, Debug)]
+pub struct SimpleVertex {
+    pub position: [f32; 3],
+}
+
+implement_vertex!(Vertex, position);

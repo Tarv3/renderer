@@ -1,10 +1,17 @@
-use std::error::Error;
-use glium::framebuffer::{MultiOutputFrameBuffer, SimpleFrameBuffer};
-use glium::texture::{DepthTexture2d, Texture2d, UncompressedFloatFormat::F32F32F32F32, MipmapsOption::NoMipmap, DepthFormat::F32};
-use glium::backend::glutin::Display;
-use glium::{Surface, Program, VertexBuffer, vertex::Vertex, index::{IndicesSource, NoIndices, PrimitiveType::TrianglesList}, draw_parameters::DrawParameters, uniforms::Uniforms};
-use render_object::{RenderObject, ModelMatrix, PosMatrix, LightModel};
 use camera::PCamera;
+use glium::backend::glutin::Display;
+use glium::framebuffer::{MultiOutputFrameBuffer, SimpleFrameBuffer};
+use glium::texture::{
+    DepthFormat::F32, DepthTexture2d, MipmapsOption::NoMipmap, Texture2d,
+    UncompressedFloatFormat::F32F32F32F32,
+};
+use glium::{
+    draw_parameters::DrawParameters,
+    index::{IndicesSource, NoIndices, PrimitiveType::TrianglesList}, uniforms::Uniforms,
+    vertex::Vertex, Program, Surface, VertexBuffer,
+};
+use render_object::{LightModel, ModelMatrix, PosMatrix, RenderObject};
+use std::error::Error;
 
 pub enum RenderStage {
     PrePass,
@@ -21,39 +28,74 @@ pub struct GBuffer<'a> {
 }
 
 impl<'a> GBuffer<'a> {
-    pub fn with_dimensions(display: &Display, dimensions: (u32, u32)) -> Result<GBuffer, Box<Error>> {
-        let diffuse = Texture2d::empty_with_format(display, F32F32F32F32, NoMipmap, dimensions.0, dimensions.1)?;
-        let normal = Texture2d::empty_with_format(display, F32F32F32F32, NoMipmap, dimensions.0, dimensions.1)?;
-        let specular = Texture2d::empty_with_format(display, F32F32F32F32, NoMipmap, dimensions.0, dimensions.1)?;
-        let depth = DepthTexture2d::empty_with_format(display, F32, NoMipmap, dimensions.0, dimensions.1)?;
-        let light = Texture2d::empty_with_format(display, F32F32F32F32, NoMipmap, dimensions.0, dimensions.1)?;
-
+    pub fn with_dimensions(
+        display: &Display,
+        dimensions: (u32, u32),
+    ) -> Result<GBuffer, Box<Error>> {
+        let diffuse = Texture2d::empty_with_format(
+            display,
+            F32F32F32F32,
+            NoMipmap,
+            dimensions.0,
+            dimensions.1,
+        )?;
+        let normal = Texture2d::empty_with_format(
+            display,
+            F32F32F32F32,
+            NoMipmap,
+            dimensions.0,
+            dimensions.1,
+        )?;
+        let specular = Texture2d::empty_with_format(
+            display,
+            F32F32F32F32,
+            NoMipmap,
+            dimensions.0,
+            dimensions.1,
+        )?;
+        let depth =
+            DepthTexture2d::empty_with_format(display, F32, NoMipmap, dimensions.0, dimensions.1)?;
+        let light = Texture2d::empty_with_format(
+            display,
+            F32F32F32F32,
+            NoMipmap,
+            dimensions.0,
+            dimensions.1,
+        )?;
 
         Ok(GBuffer {
             display,
             diffuse,
             normal,
-            specular, 
+            specular,
             depth,
-            light
+            light,
         })
     }
 
     pub fn resize(&mut self, dimensions: (u32, u32)) -> Result<(), Box<Error>> {
-        *self = GBuffer::with_dimensions(self.display, dimensions)?; 
+        *self = GBuffer::with_dimensions(self.display, dimensions)?;
         Ok(())
     }
 
     pub fn framebuffer(&self) -> Result<MultiOutputFrameBuffer, Box<Error>> {
-        let output = &[("diffuse", &self.diffuse), ("normal", &self.normal), ("specular", &self.specular)];
-        let framebuffer = MultiOutputFrameBuffer::with_depth_buffer(*&self.display, output.iter().cloned(), &self.depth)?;
+        let output = &[
+            ("diffuse", &self.diffuse),
+            ("normal", &self.normal),
+            ("specular", &self.specular),
+        ];
+        let framebuffer = MultiOutputFrameBuffer::with_depth_buffer(
+            *&self.display,
+            output.iter().cloned(),
+            &self.depth,
+        )?;
         Ok(framebuffer)
     }
 
     pub fn lightbuffer(&self) -> Result<SimpleFrameBuffer, Box<Error>> {
-        let lightbuffer = SimpleFrameBuffer::with_depth_buffer(*&self.display, &self.light, &self.depth)?;
+        let lightbuffer =
+            SimpleFrameBuffer::with_depth_buffer(*&self.display, &self.light, &self.depth)?;
         Ok(lightbuffer)
-
     }
 }
 
@@ -65,38 +107,53 @@ pub struct FrameBuffers<'a> {
 
 impl<'a> FrameBuffers<'a> {
     pub fn new(gbuffer: &'a GBuffer<'a>) -> Result<FrameBuffers<'a>, Box<Error>> {
-        Ok(
-            FrameBuffers {
-                framebuffer: gbuffer.framebuffer()?,
-                lightbuffer: gbuffer.lightbuffer()?,
-                stage: RenderStage::PrePass,
+        Ok(FrameBuffers {
+            framebuffer: gbuffer.framebuffer()?,
+            lightbuffer: gbuffer.lightbuffer()?,
+            stage: RenderStage::PrePass,
         })
     }
 
-    pub fn reset(&mut self){
-        self.framebuffer.clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
+    pub fn reset(&mut self) {
+        self.framebuffer
+            .clear_color_and_depth((0.0, 0.0, 0.0, 0.0), 1.0);
         self.lightbuffer.clear_color(0.0, 0.0, 0.0, 0.0);
         self.stage = RenderStage::PrePass;
     }
 
-    pub fn draw<'b, V, I, U>(&mut self, buffer: &VertexBuffer<V>, indices: I, program: &Program, uniforms: &U, draw_parameters: &DrawParameters) -> Result<(), Box<Error>>
+    pub fn draw<'b, V, I, U>(
+        &mut self,
+        buffer: &VertexBuffer<V>,
+        indices: I,
+        program: &Program,
+        uniforms: &U,
+        draw_parameters: &DrawParameters,
+    ) -> Result<(), Box<Error>>
     where
-        V: Vertex, 
-        I: Into<IndicesSource<'b>>, 
-        U: Uniforms
+        V: Vertex,
+        I: Into<IndicesSource<'b>>,
+        U: Uniforms,
     {
         match self.stage {
             RenderStage::PrePass => {
-                self.framebuffer.draw(buffer, indices, program, uniforms, draw_parameters)?;
+                self.framebuffer
+                    .draw(buffer, indices, program, uniforms, draw_parameters)?;
             }
             RenderStage::Lighting => {
-                self.lightbuffer.draw(buffer, indices, program, uniforms, draw_parameters)?;
-            }   
+                self.lightbuffer
+                    .draw(buffer, indices, program, uniforms, draw_parameters)?;
+            }
         }
         Ok(())
     }
 
-    pub fn draw_object<T: ModelMatrix>(&mut self, render_object: &RenderObject<T>, camera: &PCamera, program: &Program, draw_parameters: &DrawParameters) -> Result<(), Box<Error>> {
+    pub fn draw_object<T: ModelMatrix>(
+        &mut self,
+        render_object: &RenderObject<T>,
+        camera: &PCamera,
+        program: &Program,
+        draw_parameters: &DrawParameters,
+    ) -> Result<(), Box<Error>> {
         let uniforms = uniform! {
             view: *camera.view_matrix().as_ref(),
             model: render_object.model_matrix.matrix(),
@@ -108,11 +165,25 @@ impl<'a> FrameBuffers<'a> {
             eye: *camera.position.coords.as_ref(),
         };
 
-        self.draw(render_object.buffer, NoIndices(TrianglesList), program, &uniforms, draw_parameters)?;
+        self.draw(
+            render_object.buffer,
+            NoIndices(TrianglesList),
+            program,
+            &uniforms,
+            draw_parameters,
+        )?;
         Ok(())
     }
 
-    pub fn draw_light<T: PosMatrix>(&mut self, shininess: f32, light: &LightModel<T>, camera: &PCamera, program: &Program, draw_parameters: &DrawParameters, gbuffer: &GBuffer) -> Result<(), Box<Error>> {
+    pub fn draw_light<T: PosMatrix>(
+        &mut self,
+        shininess: f32,
+        light: &LightModel<T>,
+        camera: &PCamera,
+        program: &Program,
+        draw_parameters: &DrawParameters,
+        gbuffer: &GBuffer,
+    ) -> Result<(), Box<Error>> {
         let perspective_mat = camera.projection_matrix();
         let look_at_mat = camera.look_at_matrix();
         let uniforms = uniform! {
@@ -131,7 +202,13 @@ impl<'a> FrameBuffers<'a> {
             light_colour: light.colour,
         };
 
-        self.draw(&light.buffer, NoIndices(TrianglesList), program, &uniforms, draw_parameters)?;
+        self.draw(
+            &light.buffer,
+            NoIndices(TrianglesList),
+            program,
+            &uniforms,
+            draw_parameters,
+        )?;
         Ok(())
     }
 

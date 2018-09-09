@@ -1,6 +1,7 @@
 use glium::texture::Texture2d;
 use glium::VertexBuffer;
 use Vertex;
+use SimpleVertex;
 
 pub trait ModelMatrix {
     fn matrix(&self) -> [[f32; 4]; 4];
@@ -45,11 +46,11 @@ impl<'a, T: ModelMatrix> RenderObject<'a, T> {
 pub struct LightModel<'a, T: PosMatrix>  {
     pub position: T,
     pub colour: [f32; 3],
-    pub buffer: &'a VertexBuffer<Vertex>
+    pub buffer: &'a VertexBuffer<SimpleVertex>
 }
 
 impl<'a, T: PosMatrix> LightModel<'a, T> {
-    pub fn new(position: T, colour: [f32; 3], buffer: &'a VertexBuffer<Vertex>) -> LightModel<'a, T> {
+    pub fn new(position: T, colour: [f32; 3], buffer: &'a VertexBuffer<SimpleVertex>) -> LightModel<'a, T> {
         LightModel {
             position,
             colour, 
