@@ -29,4 +29,4 @@ pub struct SimpleVertex {
     pub position: [f32; 3],
 }
 
-implement_vertex!(Vertex, position);
+implement_vertex!(SimpleVertex, position);
