@@ -5,6 +5,8 @@ extern crate glium;
 pub mod math;
 pub mod test;
 pub mod camera;
+pub mod gbuffer;
+pub mod render_object;
 
 pub type Vec3 = na::Vector3<f32>;
 pub type Vec2 = na::Vector2<f32>;
@@ -21,3 +23,10 @@ pub struct Vertex {
 }
 
 implement_vertex!(Vertex, position, normal, tangent, bitangent, tex_coord);
+
+#[derive(Copy, Clone, Debug)]
+pub struct SimpleVertex {
+    pub position: [f32; 3],
+}
+
+implement_vertex!(SimpleVertex, position);
