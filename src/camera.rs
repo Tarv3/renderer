@@ -170,7 +170,7 @@ impl PCamera {
 
     pub fn rotate_around_look_vertical(&mut self, angle: f32) {
         let to_pos = self.position - self.look_at;
-        angle = clamp_rotation(self.vertical_angle, -angle, 0.05, 3.10);
+        let angle = clamp_rotation(self.vertical_angle, -angle, 0.05, 3.10);
         let rotation = Rotation3::from_axis_angle(&self.right_vec(), angle);
         
         self.vertical_angle += angle;
