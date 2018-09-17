@@ -184,7 +184,7 @@ impl PCamera {
         let circumference = 2.0 * PI * radius;
         let angle = distance * circumference * 0.5 * FRAC_1_PI;
 
-        self.rotate_position_around_look(angle);
+        self.rotate_around_look_horizontal(angle);
     }
 
     pub fn move_unlocked(&mut self, value: &Vec3) {
