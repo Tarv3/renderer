@@ -161,9 +161,16 @@ impl PCamera {
     }
 
     // Positive angle will rotate counter clockwise
-    pub fn rotate_position_around_look(&mut self, angle: f32) {
+    pub fn rotate_around_look_horizontal(&mut self, angle: f32) {
         let to_pos = self.position - self.look_at;
         let rotation = Rotation3::from_axis_angle(&self.up, angle);
+
+        self.position = self.look_at + rotation * to_pos;
+    }
+
+    pub fn rotate_around_look_vertical(&mut self, angle: f32) {
+        let to_pos = self.position - self.look_at;
+        let rotation = Rotation3::from_axis_angle(&self.right_vec(), angle);
 
         self.position = self.look_at + rotation * to_pos;
     }
