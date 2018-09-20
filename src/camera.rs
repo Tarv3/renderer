@@ -86,7 +86,7 @@ impl Projection {
                 let fovy = persp.fovy();
                 let y = fovy.tan();
                 let mut new_fovy = (scale * y).atan();
-                new_fovy = clamp(new_fovy, 0.02, 1.55);
+                new_fovy = clamp(new_fovy, 0.001, 1.569);
                 persp.set_fovy(new_fovy);
 
                 *persp.as_matrix()
