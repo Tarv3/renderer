@@ -6,6 +6,7 @@ use na::{
 use std::f32::consts::{FRAC_1_PI, PI};
 use {Mat4, Pnt3, Vec3};
 
+#[derive(Clone, Copy, Debug)]
 pub enum Projection {
     Orthographic(Orthographic3<f32>),
     Perspective(Perspective3<f32>),
@@ -76,6 +77,33 @@ impl Projection {
                 persp.zfar(),
             )),
             Projection::Orthographic(ortho) => Projection::ortho(*ortho),
+        }
+    }
+
+    pub fn zoomed_matrix(&self, scale: f32) -> Mat4 {
+        match self {
+            Projection::Perspective(mut persp) => {
+                let fovy = persp.fovy();
+                let y = fovy.tan();
+                let mut new_fovy = (2.0 * y / (1.0 - y * y)).atan();
+                new_fovy = clamp(new_fovy, 0.02, 1.55);
+                persp.set_fovy(new_fovy);
+
+                *persp.as_matrix()
+            }
+            Projection::Orthographic(mut ortho) => {
+                let scale = scale * 0.5;
+                let left = ortho.left();
+                let right = ortho.right();
+                let top = ortho.top();
+                let bottom = ortho.bottom();
+                ortho.set_left(left * scale);
+                ortho.set_right(right * scale);
+                ortho.set_top(top * scale);
+                ortho.set_bottom(bottom * scale);
+
+                *ortho.as_matrix()
+            }
         }
     }
 }
@@ -172,7 +200,7 @@ impl PCamera {
         let to_pos = self.position - self.look_at;
         let angle = clamp_rotation(self.vertical_angle, -angle, 0.05, 3.10);
         let rotation = Rotation3::from_axis_angle(&self.right_vec(), angle);
-        
+
         self.vertical_angle += angle;
         self.position = self.look_at + rotation * to_pos;
     }
@@ -235,6 +263,10 @@ impl PCamera {
 
     pub fn view_matrix(&self) -> Mat4 {
         self.projection_matrix() * self.look_at_matrix()
+    }
+
+    pub fn zoomed_view_matrix(&self, scale: f32) -> Mat4 {
+        self.projection.zoomed_matrix(scale) * self.look_at_matrix()
     }
 
     pub fn inv_view_matrix(&self) -> Mat4 {

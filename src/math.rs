@@ -112,7 +112,8 @@ pub fn project(a: &Vec3, b: &Vec3) -> Vec3 {
 
 pub fn clamp(value: f32, min: f32, max: f32) -> f32 {
     assert!(min < max);
-    if value > max {
+    
+    if value > max || value.is_nan()|| value.is_infinite() {
         max
     }
     else if value < min {
