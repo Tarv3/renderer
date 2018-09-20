@@ -88,6 +88,7 @@ impl Projection {
                 let mut new_fovy = (2.0 * y / (1.0 - y * y)).atan();
                 new_fovy = clamp(new_fovy, 0.02, 1.55);
                 persp.set_fovy(new_fovy);
+                println!("{}", new_fovy);
 
                 *persp.as_matrix()
             }
