@@ -85,7 +85,7 @@ impl Projection {
             Projection::Perspective(mut persp) => {
                 let fovy = persp.fovy();
                 let y = fovy.tan();
-                let mut new_fovy = (2.0 * y).atan();
+                let mut new_fovy = (scale * y).atan();
                 new_fovy = clamp(new_fovy, 0.02, 1.55);
                 persp.set_fovy(new_fovy);
 
