@@ -35,6 +35,17 @@ impl Projection {
         }
     }
 
+    pub fn aspect_ratio(&self) -> f32 {
+        match &self {
+            Projection::Perspective(persp) => persp.aspect(),
+            Projection::Orthographic(ortho) => {
+                let width = ortho.right() - ortho.left();
+                let height = ortho.top() - ortho.bottom();
+                width / height
+            },
+        }
+    }
+
     pub fn set_aspect(&mut self, aspect: f32) {
         match self {
             Projection::Perspective(ref mut persp) => persp.set_aspect(aspect),
