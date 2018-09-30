@@ -119,6 +119,7 @@ impl Projection {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
 pub struct PCamera {
     pub vertical_angle: f32,
     pub position: Pnt3,
