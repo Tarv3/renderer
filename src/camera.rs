@@ -20,6 +20,20 @@ impl Projection {
     pub fn ortho(orthographic: Orthographic3<f32>) -> Projection {
         Projection::Orthographic(orthographic)
     }
+    
+    pub fn znear(&self) -> f32 {
+        match &self {
+            Projection::Perspective(persp) => persp.znear(),
+            Projection::Perspective(ortho) => ortho.znear(),
+        }
+    }
+
+    pub fn zfar(&self) -> f32 {
+        match &self {
+            Projection::Perspective(persp) => persp.zfar(),
+            Projection::Perspective(ortho) => ortho.zfar(),
+        }
+    }
 
     pub fn as_matrix(&self) -> Mat4 {
         match &self {
@@ -144,6 +158,14 @@ impl PCamera {
             up,
             projection,
         }
+    }
+    
+    pub fn znear(&self) -> f32 {
+        self.projection.znear()
+    }
+    
+    pub fn zfar(&self) -> f32 {
+        self.projection.zfar()
     }
 
     pub fn perspective_projection(&mut self) {
