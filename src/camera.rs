@@ -24,14 +24,14 @@ impl Projection {
     pub fn znear(&self) -> f32 {
         match &self {
             Projection::Perspective(persp) => persp.znear(),
-            Projection::Perspective(ortho) => ortho.znear(),
+            Projection::Orthographic(ortho) => ortho.znear(),
         }
     }
 
     pub fn zfar(&self) -> f32 {
         match &self {
             Projection::Perspective(persp) => persp.zfar(),
-            Projection::Perspective(ortho) => ortho.zfar(),
+            Projection::Orthographic(ortho) => ortho.zfar(),
         }
     }
 
