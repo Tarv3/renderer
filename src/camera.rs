@@ -277,6 +277,15 @@ impl PCamera {
 
         self.move_unlocked(&movement);
     }
+    
+    pub fn move_up_relative(&mut self, distance: f32) {
+        let up = *self.up.as_ref();
+        let facing = self.look_at - self.position;
+        let dir = ::na::normalize(&(up - project(&up, &facing));
+        let movement = dir * distance;
+
+        self.move_unlocked(&movement);
+    }
 
     pub fn move_forward_ortho_up(&mut self, distance: f32) {
         let forward = self.forward_ortho_vec();
