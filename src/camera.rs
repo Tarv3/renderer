@@ -203,9 +203,9 @@ impl PCamera {
         Unit::new_normalize(Matrix::cross(&self.forward_vec(), &self.up))
     }
 
-    // A positive angle will rotate it "down". Will force it to be 0.01 <= angle <= 3.13
+    // A positive angle will rotate it "down". Will force it to be -3.13 <= angle <= 3.13
     pub fn rotate_view_vertical(&mut self, angle: f32) {
-        let angle = clamp_rotation(self.vertical_angle, -angle, 0.05, 3.10);
+        let angle = clamp_rotation(self.vertical_angle, -angle, -3.13, 3.13);
         let axis = self.right_vec();
         let rotation = Rotation3::from_axis_angle(&axis, angle);
         let to_look_at = self.look_at - self.position;
