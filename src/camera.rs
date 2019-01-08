@@ -205,7 +205,7 @@ impl PCamera {
 
     // A positive angle will rotate it "down". Will force it to be -3.13 <= angle <= 3.13
     pub fn rotate_view_vertical(&mut self, angle: f32) {
-        let angle = clamp_rotation(self.vertical_angle, -angle, -0.1, 6.2);
+        let angle = clamp_rotation(self.vertical_angle, -angle, 0.1, 3.1);
         let axis = self.right_vec();
         let rotation = Rotation3::from_axis_angle(&axis, angle);
         let to_look_at = self.look_at - self.position;
@@ -232,7 +232,7 @@ impl PCamera {
 
     pub fn rotate_around_look_vertical(&mut self, angle: f32) {
         let to_pos = self.position - self.look_at;
-        let angle = clamp_rotation(self.vertical_angle, -angle, 0.05, 3.10);
+        let angle = clamp_rotation(self.vertical_angle, angle, 0.05, 3.10);
         let rotation = Rotation3::from_axis_angle(&self.right_vec(), angle);
 
         self.vertical_angle += angle;
